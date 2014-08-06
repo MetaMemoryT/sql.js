@@ -266,6 +266,10 @@ class Database
 			@handleError sqlite3_exec @db, sql, 0, 0, apiTemp
 		return @
 
+	'register_character_tokenizer' : () ->
+		if not @db then throw "Database closed"
+		register_character_tokenizer @db
+
 	### Execute an SQL query, and returns the result.
 
 	This is a wrapper against Database.prepare, Statement.step, Statement.get,
@@ -331,7 +335,7 @@ class Database
 
 	@param sql [String] A string of SQL text. Can contain placeholders that will be
 	bound to the parameters given as the second argument
-	@param params [Array<String,Number,null,Uint8Array>] (*optional*) Parameters to bind 
+	@param params [Array<String,Number,null,Uint8Array>] (*optional*) Parameters to bind
 	to the query
 	@param callback [Function(Object)] A function that will be called on each row of result
 	@param done [Function] A function that will be called when all rows have been retrieved

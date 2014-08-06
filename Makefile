@@ -2,16 +2,16 @@
 
 EMSCRIPTEN?=/usr/bin
 
-EMCC=$(EMSCRIPTEN)/emcc
+EMCC=emcc
 
-CFLAGS=-DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
+CFLAGS=-DSQLITE_ENABLE_FTS4 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DISABLE_LFS -DLONGDOUBLE_TYPE=double -DSQLITE_INT64_TYPE="long long int" -DSQLITE_THREADSAFE=0
 
 all: js/sql.js
 
-debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 
+debug: EMFLAGS= -O1 -g -s INLINING_LIMIT=10 -s ASSERTIONS=1
 debug: js/sql-debug.js
 
-optimized: EMFLAGS= --closure 1 -O3 -s INLINING_LIMIT=50
+optimized: EMFLAGS= --closure 1 -O3 -s INLINING_LIMIT=50 -s OUTLINING_LIMIT=20000
 optimized: js/sql-optimized.js
 
 js/sql.js: optimized
@@ -36,11 +36,10 @@ js/worker.sql.js: js/sql.js js/worker.js
 
 c/sqlite3.bc: c/sqlite3.c
 	# Generate llvm bitcode
-	$(EMCC) $(CFLAGS) c/sqlite3.c -o c/sqlite3.bc
+	$(EMCC) $(CFLAGS) c/character_tokenizer.c c/sqlite3.c -o c/sqlite3.bc
 
 module.tar.gz: test package.json AUTHORS README.md js/sql.js
 	tar --create --gzip $^ > $@
 
 clean:
-	rm -rf js/sql*.js js/api.js js/sql*-raw.js c/sqlite3.bc
-
+	rm -rf js/sql*.js c/*.o js/api.js js/sql*-raw.js c/sqlite3.bc
